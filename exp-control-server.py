@@ -17,35 +17,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pylint: disable-msg=E1101
-
-import sys, os
-
-#change path
-os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
-
-from PySide import QtCore
-QtCore.pyqtSignal = QtCore.Signal
-QtCore.pyqtSlot = QtCore.Slot
-
-import PySide.QtGui as QtGui
+import sys
+import Pyro4
 
 from libraries.system import System
-import gui.programwindow
-from gui.constants import PRG_NAME, PRG_VERSION
 
 def main(args):
-
-    system = System()
-
-    app = QtGui.QApplication(args)
-
-    win = gui.programwindow.ProgramEditWindow(system=system)
-
-    win.setWindowTitle("%s (%s)" % (PRG_NAME, PRG_VERSION))
-    win.showMaximized()
-    win.setFocus()
-
-    sys.exit(app.exec_())
+    # expose the class from the library using @expose as wrapper function:
+    PyroSystem = Pyro4.expose(System)
+    
+#    daemon.register(ExposedClass)    # register the exposed class rather than the library class itself
+#    
+#                   # ------ normal code ------
+#    daemon = Pyro4.Daemon()
+#    uri = daemon.register(Thing)
+#    print("uri=",uri)
+#    daemon.requestLoop()
+    # ------ alternatively, using serveSimple -----
+    Pyro4.Daemon.serveSimple(
+        {
+            PyroSystem: "PyroSystem"
+        },
+        ns=True, verbose=True, host="yourhostname")
 
 if __name__ == "__main__":
     main(sys.argv)
