@@ -37,8 +37,7 @@ import Pyro4
 
 def main(args):
 
-    system = Pyro4.Proxy("PYRONAME:PyroSystem")
-
+    system = Pyro4.Proxy("PYRONAME:PyroSystem@10.194.32.22")
     app = QtGui.QApplication(args)
 
     win = gui.programwindow.ProgramEditWindow(system=system)
