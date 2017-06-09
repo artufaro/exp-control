@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -19,8 +19,8 @@
 
 from functools import partial
 
-import PyQt4.QtCore as QtCore
-import PyQt4.QtGui as QtGui
+import PySide.QtCore as QtCore
+import PySide.QtGui as QtGui
 
 import matplotlib
 matplotlib.use("Qt4Agg")

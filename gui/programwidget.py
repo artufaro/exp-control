@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -24,7 +24,7 @@ from gui.constants import RED
 import gui.programtable
 import gui.actionstree
 
-import PyQt4.QtGui as QtGui
+import PySide.QtGui as QtGui
 
 class ProgramEditWidget(QtGui.QWidget, object):
 

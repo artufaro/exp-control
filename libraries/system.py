@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -43,17 +43,31 @@ class System(object):
     def __init__(self, external_trigger=False):
         print "Experiment Control"
         print "https://github.com/simondona/exp-control-bec-tn"
-        print "author: Simone Donadello - license: GNU GPL v3"
+        print "author: Simone Donadello - license: GNU GPLv3"
         print
 
-        self.fpga_list = []
         self.main_program = None
         self.external_trigger = bool(external_trigger)
+
+        self.fpga_list = []
+        self.board_list = []
+        self.action_list = []
+
+        self.init_fpgas()
         self.init_boards()
         self.init_actions()
+
         self.variables = dict()
         self.cmd_thread = lib_syscommand.SysCommand(self)
         self.parser = lib_parser.Parser(self)
+    
+    @property    
+    def all_fpga_ready(self):
+        status = self.get_fpga_status()
+        tot_state = True
+        for state in status:
+            tot_state = tot_state and not state.running
+        return tot_state
 
     def init_boards(self):
         #first load boards
@@ -66,17 +80,13 @@ class System(object):
         init_actions.action_list_init(self.action_list)
         init_programs.program_list_init(self.action_list)
 
-    def init_fpga_list(self):
+    def init_fpgas(self):
         new_list = pylibftdi.Driver().list_devices()
         self.fpga_list = []
         for n_id, name in enumerate(new_list):
             if name[1] == "DLP-FPGA":
                 self.fpga_list.append(lib_fpga.Fpga(device_index=n_id))
-        print "found " + str(len(self.fpga_list)) + " FPGAs connected"
-
-    def print_fpga_commands(self):
-        for cmd in self._get_program_commands():
-            print cmd.get_hex()
+        print "found %d FPGAs connected"%len(self.fpga_list)
 
     def get_fpga_status(self):
         status = []
@@ -115,6 +125,7 @@ class System(object):
         return int(self._time_base*self._time_multiplier*float(time))
 
     def get_program_time(self, prg_name=None, *args, **kwargs):
+        #TODO: control if the correct main program is loaded when it is called
         if prg_name is None:
             program = self.main_program
         else:
@@ -124,7 +135,7 @@ class System(object):
         if isinstance(program, lib_program.Program):
             instrs_prg = program.get_all_instructions()
             if len(instrs_prg) > 0:
-                return instrs_prg[-1].time_clock
+                return instrs_prg[-1].time
             else:
                 return 0
         else:
@@ -132,17 +143,19 @@ class System(object):
             return 0
 
     def check_instructions(self):
+        #TODO: control if the correct main program is loaded when it is called
+        problems = []
+        valid = False
         if isinstance(self.main_program, lib_program.Program):
             instructions = self.main_program.get_all_instructions()
 
-            problems = []
             valid = True
             first_density_error = False
             if len(instructions) >= 2:
                 if len(instructions) >= 2**14:
                     valid = False
                     problems += instructions[2**14:]
-                    print "ERROR: too many instructions " + str(len(instructions)) + " in the program (maximum is 16k)"
+                    print "ERROR: too many instructions in the program, %d (maximum is 16k)"%len(instructions)
 
                 fifo_size = 2*(2**11)
                 prev_instr = instructions[0]
@@ -153,11 +166,11 @@ class System(object):
                         if time_delta < 4:
                             problems.append(instr)
                             valid = False
-                            print "ERROR: too short time between actions '" + prev_instr.action.name + "' and '" + instr.action.name + "' at time " + str(self.get_time(instr.time_clock)) + " (minimum is 4 clock cicles)"
+                            print "ERROR: too short time between actions '%s' and '%s' at time %f (minimum is 4 clock cicles)"%(prev_instr.action.name, instr.action.name, self.get_time(instr.time))
                         if time_delta > 2**32:
                             valid = False
                             problems.append(instr)
-                            print "ERROR: too long time between actions '" + prev_instr.action.name + "' and '" + instr.action.name + "' at time " + str(self.get_time(instr.time_clock)) + " (maximum is about 429s)"
+                            print "ERROR: too long time between actions '%s' and '%s' at time %f (maximum is ~429s)"%(prev_instr.action.name, instr.action.name, self.get_time(instr.time))
                         prev_instr = instr
 
                     if len(instructions) >= fifo_size \
@@ -169,27 +182,30 @@ class System(object):
                             valid = False
                             problems += instructions[n_instr:fifo_size+n_instr]
                             first_density_error = True
-                            print "ERROR: too dense operations starting at time " + str(self.get_time(instructions[n_instr].time_clock)) + " (a rate of 20 clock cicles per action can be sustained when the FIFO is empty)"
+                            print "ERROR: too dense operations starting at time %f (a rate of ~20 clock cicles per action can be sustained when the FIFO is empty)"%self.get_time(instructions[n_instr].time)
 
                     if isinstance(instr.action, lib_action.DdsAction) \
                                             and prev_dds_instr is not None:
-                        if instr.time_clock - prev_dds_instr.time_clock < 0.035 \
+                        if instr.time - prev_dds_instr.time < 0.035 \
                                 and instr.action.board == prev_dds_instr.action.board:
                             valid = False
                             problems.append(instr)
-                            print "ERROR: DDS actions '" + prev_dds_instr.action.name + "' and '" + instr.action.name + "' at time " + str(self.get_time(instr.time_clock)) + " are too close (a DDS action takes 35us to complete)"
+                            print "ERROR: DDS actions '%s' and '%s' at time %f are too close (a DDS action takes ~35us to complete)"%(prev_dds_instr.action.name, instr.action.name, self.get_time(instr.time))
                         prev_dds_instr = None
                     if isinstance(instr.action, lib_action.DdsAction):
                         prev_dds_instr = instr
 
-            return valid, problems
-        else:
-            return False, []
+        return valid, problems
 
     def send_program_and_run(self):
+        #TODO: control if the correct main program is loaded when it is called
         result = False
         if isinstance(self.main_program, lib_program.Program):
             instructions = self._get_program_commands()
+            while not self.all_fpga_ready:
+                print "FPGAs are still in execution. Waiting..."
+                sleep_event = threading.Event()
+                sleep_event.wait(1000*self._time_multiplier)
             print "running the current program"
             for fpga_id in self.fpga_list:
                 valid = fpga_id.send_program_and_run(instructions)
@@ -199,15 +215,14 @@ class System(object):
         return result
 
     def _run_program(self):
+        instrs_fpga = []
         if isinstance(self.main_program, lib_program.Program):
             instrs_prg = self.main_program.get_all_instructions()
             valid, problems = self.check_instructions()
             if not valid:
                 for probl in problems:
                     probl.parents[-1].get(probl.uuid).enable = False
-            valid, problems = self.check_instructions()
 
-            instrs_fpga = []
             prev_instr = lib_instruction.Instruction(0, lib_action.Action(self, "temp"))
             for curr_instr in instrs_prg:
                 if curr_instr not in problems:
@@ -217,20 +232,18 @@ class System(object):
 
                     prev_instr = curr_instr
                 else:
-                    print "WARNING: action \"%s\" at time %f wont be executed"%(curr_instr.action.name, self.get_time(curr_instr.time_clock))
+                    print "WARNING: action '%s' at time %f wont be executed"%(curr_instr.action.name, self.get_time(curr_instr.time))
 
             end_instr = lib_instruction.FpgaInstruction(0, action=lib_action.EndAction(self))
             instrs_fpga.append(end_instr)
 
-            return instrs_fpga
-        else:
-            return []
+        return instrs_fpga
 
     def _get_program_commands(self):
+        cmd_list = []
         if isinstance(self.main_program, lib_program.Program):
             instructions = self._run_program()
 
-            cmd_list = []
             if self.external_trigger:
                 cmd_list.append(lib_command.ExtTriggerOnCommand())
             else:
@@ -239,21 +252,23 @@ class System(object):
             for instr_num, instr in enumerate(instructions):
                 cmd_list.append(lib_command.LoadCommand(memory=instr_num,
                                                         command=instr.action.command_bits,
-                                                        time=instr.time_clock,
+                                                        time=instr.time,
                                                         address=instr.action.board.address,
                                                         data=instr.data))
 
             cmd_list.append(lib_command.LoadDoneCommand())
 
-            return cmd_list
-        else:
-            return []
+        return cmd_list
 
     def _get_instr_time_diff(self, prev_instr, curr_instr):
         if isinstance(prev_instr, lib_instruction.Instruction) and \
                     isinstance(curr_instr, lib_instruction.Instruction):
-            delta_t = int(curr_instr.time_clock - prev_instr.time_clock)
+            delta_t = int(curr_instr.time - prev_instr.time)
             return max(0, delta_t)
         else:
-            print "WARNING: wrong call to time interval function, two \"%s\" must be given"%(str(lib_instruction.Instruction))
+            print "WARNING: wrong call to time interval function, two '%s' must be given"%(str(lib_instruction.Instruction))
             return None
+
+    def _print_fpga_commands(self):
+        for cmd in self._get_program_commands():
+            print cmd.get_hex()

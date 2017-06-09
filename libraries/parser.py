@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -288,18 +288,18 @@ class Parser(object):
 
         prg_str += "    return prg\n"
 
-
-        cmd_str_init = [l for l in cmd_str[0].splitlines() if l]
-        cmd_str_loop = [l for l in cmd_str[1].splitlines() if l]
-        if len(cmd_str_loop)+len(cmd_str_init) > 0:
-            prg_str += "def commands(cmd):\n"
-            for l in cmd_str_init:
-                prg_str += "    "+l+"\n"
-            if len(cmd_str_loop) > 0:
-                prg_str += "    while(cmd.running):\n"
-                for l in cmd_str_loop:
-                    prg_str += "        "+l+"\n"
-            prg_str += "    return cmd\n"
+        if cmd_str is not None:
+            cmd_str_init = [l for l in cmd_str[0].splitlines() if l]
+            cmd_str_loop = [l for l in cmd_str[1].splitlines() if l]
+            if len(cmd_str_loop)+len(cmd_str_init) > 0:
+                prg_str += "def commands(cmd):\n"
+                for l in cmd_str_init:
+                    prg_str += "    "+l+"\n"
+                if len(cmd_str_loop) > 0:
+                    prg_str += "    while(cmd.running):\n"
+                    for l in cmd_str_loop:
+                        prg_str += "        "+l+"\n"
+                prg_str += "    return cmd\n"
 
         path, fname = self.get_program_path(prg_name, categories)
         fname_path = os.path.join(path, fname)
@@ -331,7 +331,7 @@ class Parser(object):
         elif "s" in fmt: typ = str
         else:
             typ = str
-            print "WARNING: unrecognized format \"%s\""%fmt
+            print "WARNING: unrecognized format '%s'"%fmt
         return typ
 
     def get_actions_dict(self, only_prg=False):
@@ -359,7 +359,7 @@ class Parser(object):
             for uv in act_dict["vars"]:
                 act_dict["vars"][uv] = getattr(instr.action, uv)
             act_dict["enable"] = instr.enable
-            act_dict["time"] = instr.time_clock
+            act_dict["time"] = instr.time
             lst.append(act_dict)
 
         return lst

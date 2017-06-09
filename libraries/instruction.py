@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -23,11 +23,11 @@ import program as lib_program
 import uuid as uuid_lib
 
 class Instruction(object):
-    def __init__(self, time_clock, action, enable=True, parents=None, uuid=None):
-        self.time_clock = int(time_clock)
+    def __init__(self, time, action, enable=True, parents=None, uuid=None):
+        self.time = int(time)
 
         if not isinstance(action, (lib_action.Action, lib_program.Program)):
-            print "WARNING: instruction at clock time %d does not specify a valid action"%self.time_clock
+            print "WARNING: instruction at clock time %d does not specify a valid action"%self.time
 
         if parents is None:
             parents = []
@@ -35,7 +35,7 @@ class Instruction(object):
             parents = [parents]
         for par in parents:
             if not isinstance(par, lib_program.Program):
-                print "WARNING: instruction at clock time %d does not specify a valid parent program"%self.time_clock
+                print "WARNING: instruction at clock time %d does not specify a valid parent program"%self.time
 
         self.parents = parents
         self.action = action
@@ -47,9 +47,9 @@ class Instruction(object):
 
     def __lt__(self, other):
         if isinstance(other, Instruction):
-            return self.time_clock < other.time_clock
+            return self.time < other.time
         else:
-            print "WARNING: cannot compare \"%s\" with \"%s\""%(str(type(self)), str(type(other)))
+            print "WARNING: cannot compare '%s' with '%s'"%(str(type(self)), str(type(other)))
             return None
 
     def __eq__(self, other):
@@ -64,16 +64,16 @@ class FpgaInstruction(Instruction):
         time_delta = int(time_delta)
         if curr_instr is not None and action is None:
             if not isinstance(curr_instr, Instruction):
-                print "WARNING: wrong call to fpga instruction at clock time %d (\"%s\" given instead of \"%s\")"%(time_delta, str(type(curr_instr)), str(Instruction))
+                print "WARNING: wrong call to fpga instruction at clock time %d ('%s' given instead of '%s')"%(time_delta, str(type(curr_instr)), str(Instruction))
             else:
                 action = curr_instr.action
         elif curr_instr is None and action is not None:
             if not isinstance(action, lib_action.Action):
-                print "WARNING: wrong call to fpga instruction at clock time %d (\"%s\" given instead of \"%s\")"%(time_delta, str(type(action)), str(lib_action.Action))
+                print "WARNING: wrong call to fpga instruction at clock time %d ('%s' given instead of '%s')"%(time_delta, str(type(action)), str(lib_action.Action))
         else:
             print "WARNING: call to fpga instruction at clock time %d is not implemented"%time_delta
 
-        super(FpgaInstruction, self).__init__(time_clock=time_delta,
+        super(FpgaInstruction, self).__init__(time=time_delta,
                                               action=action,
                                               enable=True)
 

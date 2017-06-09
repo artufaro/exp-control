@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -24,8 +24,8 @@ import re
 import gui.editdialogs
 import gui.opensavedialogs
 
-import PyQt4.QtCore as QtCore
-import PyQt4.QtGui as QtGui
+import PySide.QtCore as QtCore
+import PySide.QtGui as QtGui
 
 
 class ProgramTable(QtGui.QTableWidget, object):
@@ -223,7 +223,7 @@ class ProgramTable(QtGui.QTableWidget, object):
                         new_item.setFlags(new_item.flags()&~QtCore.Qt.ItemIsEnabled)
 
                     if self.extended_view and not row["enable_parent"]:
-                        new_item.setBackgroundColor(QtCore.Qt.lightGray)
+                        new_item.setBackground(QtCore.Qt.lightGray)
                         font = QtGui.QFont()
                         font.setItalic(True)
                         new_item.setFont(font)
@@ -499,39 +499,45 @@ class ProgramTable(QtGui.QTableWidget, object):
 
     def update_fpgas(self, evt=None, init=True):
         if init:
-            self.system.init_fpga_list()
+            self.system.init_fpgas()
         status = self.system.get_fpga_status()
         self.fpgas_updated.emit(status)
         return status
+
+    def check_prg(self):
+        prg_name = "__temp_check"
+        self.save_prg(prg_name=prg_name, categories=[], prg_list=self.prg_list())
+        self.system.set_program(prg_name)
+        self.system.check_instructions()
 
     def send_prg(self, evt=None, prg_name=None, save_before=False):
         result = False
         if save_before and self.prg_name is not None:
             self.save_prg()
         elif self.prg_name is None:
-            self.save_prg(prg_name="__new_program", categories=[], prg_list=self.prg_list(), cmd_str=("",""))
+            self.save_prg(prg_name="__new_program", categories=[], prg_list=self.prg_list())
 
-        status = self.update_fpgas(init=False)
-        tot_state = True
-        for state in status:
-            tot_state = tot_state and not state.running
-        if not tot_state:
-            reply = QtGui.QMessageBox.question(self, 'FPGA warning',
-                                               "Another program is running on one or more FPGAs,\nare you shure to launch a new one?",
-                                               QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
-                                               QtGui.QMessageBox.No)
-            tot_state = reply == QtGui.QMessageBox.Yes
+#        status = self.update_fpgas(init=False)
+#        tot_state = True
+#        for state in status:
+#            tot_state = tot_state and not state.running
+#        if not tot_state:
+#            reply = QtGui.QMessageBox.question(self, 'FPGA warning',
+#                                               "Another program is running on one or more FPGAs,\nare you sure to launch a new one?",
+#                                               QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
+#                                               QtGui.QMessageBox.No)
+#            tot_state = reply == QtGui.QMessageBox.Yes
+#
+#        if tot_state:
+        if prg_name is None:
+            if self.prg_name is not None:
+                prg_name = self.prg_name
+            else:
+                prg_name = "__new_program"
 
-        if tot_state:
-            if prg_name is None:
-                if self.prg_name is not None:
-                    prg_name = self.prg_name
-                else:
-                    prg_name = "__new_program"
-
-            self.system.set_program(prg_name)
-            result = self.system.send_program_and_run()
-            self.program_sent.emit(result)
+        self.system.set_program(prg_name)
+        result = self.system.send_program_and_run()
+        self.program_sent.emit(result)
         return result
 
     def on_direct_run(self, action=None):
@@ -549,7 +555,7 @@ class ProgramTable(QtGui.QTableWidget, object):
             else:
                 acts = [action]
 
-        self.save_prg(prg_name="__temp_direct_run", prg_list=acts, categories=[], cmd_str=("",""))
+        self.save_prg(prg_name="__temp_direct_run", prg_list=acts, categories=[])
         self.send_prg(prg_name="__temp_direct_run")
 
     def save_prg_as(self, evt=None, dialog=None):

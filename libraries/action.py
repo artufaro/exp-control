@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -65,6 +65,44 @@ class DigitalAction(DataAction):
 
         for ch_st in zip(self.channel, self.status):
             data = self.board.set_status(ch_st[0], ch_st[1])
+        return data
+
+class DigitalThresholdAction(DataAction):
+    def __init__(self, system, board, channel=None, status=None, threshold=None, name="", comment=""):
+        super(DigitalThresholdAction, self).__init__(system, board, name, comment)
+
+        if type(channel) is not list:
+            channel = [channel]
+        if type(status) is not list:
+            status = [status]
+        if type(threshold) is not list:
+            threshold = [threshold]
+
+        self.channel = []
+        self.status = []      
+        # Mannaia la miseria
+        self.threshold = [] #[float(thr) if thr is not None else None for thr in threshold]
+
+        if len(channel) == len(status):
+            for chn in channel:
+                self.channel.append(int(chn))
+            for stt in status:
+                self.status.append(stt)
+            for thr in threshold:
+                if thr is not None:
+                    self.threshold.append(float(thr))
+                else:
+                    self.threshold.append(None)
+        else:
+            print "ERROR: digital action \"%s\" does not have corrinspondence between channels and states"%self.name
+
+    def do_action(self):
+        data = 0
+        if len(self.status) == 0:
+            print "WARNING: digital action \"%s\" does not specify any channel, data is initialized to %d"%(self.name, data)
+
+        for ch_st in zip(self.channel, self.status, self.threshold):
+            data = self.board.set_status(ch_st[0], ch_st[1], ch_st[2])
         return data
 
 class DdsAction(DataAction):
@@ -153,11 +191,23 @@ class AnalogAction(DataAction):
 
         return data
 
+###### FIXME: the address of the (fake) board associated with these actions cannot be the same as a true board
+###### Fixed: in board.py a None address is translated into the highest possible value (2**8 - 1)
+
+class EmptyAction(Action):
+    def __init__(self, system, name="EMPTY"):
+        super(EmptyAction, self).__init__(system, name)
+        self.command_bits = 0b00000000
+        self.board = lib_board.Board(None)
+
+    def do_action(self):
+        return 0
+
 class NopAction(Action):
     def __init__(self, system, name="NOP"):
         super(NopAction, self).__init__(system, name)
         self.command_bits = 0b00100000
-        self.board = lib_board.Board(0)
+        self.board = lib_board.Board(None)
 
     def do_action(self):
         return 0
@@ -166,7 +216,7 @@ class BreakpointAction(Action):
     def __init__(self, system, name="BREAKPOINT"):
         super(BreakpointAction, self).__init__(system, name)
         self.command_bits = 0b00010000
-        self.board = lib_board.Board(0)
+        self.board = lib_board.Board(None)
 
     def do_action(self):
         return 0
@@ -175,7 +225,7 @@ class EndAction(Action):
     def __init__(self, system, name="END"):
         super(EndAction, self).__init__(system, name)
         self.command_bits = 0b10000000
-        self.board = lib_board.Board(0)
+        self.board = lib_board.Board(None)
 
     def do_action(self):
         return 0

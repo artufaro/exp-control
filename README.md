@@ -49,7 +49,6 @@ The system kernel can also be initialized for running stand-alone without the GU
 ```
 from libraries.system import System
 s = System()
-s.init_fpga_list()
 s.set_program("test")
 s.send_program_and_run()
 ```
@@ -88,7 +87,7 @@ The roadmap of future versions can be found in the wiki: https://github.com/simo
 
 
 ## Author
-* [Simone Donadello](https://github.com/simondona/) <simon.dona.dev@gmail.com>
+* Simone Donadello: <simon.dona.dev@gmail.com> (https://github.com/simondona/)
 
 
 ## License

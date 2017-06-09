@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -23,8 +23,8 @@ from functools import partial
 from gui.constants import RED
 import gui.editdialogs
 
-import PyQt4.QtGui as QtGui
-import PyQt4.QtCore as QtCore
+import PySide.QtGui as QtGui
+import PySide.QtCore as QtCore
 
 class ActionsTree(QtGui.QTreeWidget, object):
 

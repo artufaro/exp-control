@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -20,7 +20,10 @@
 
 class Board(object):
     def __init__(self, address, name="", comment=""):
-        self.address = int(address)
+        if address is not None:    
+            self.address = int(address)
+        else:
+            self.address = int(2**8 -1)
         self.name = str(name)
         self.comment = str(comment)
 
@@ -31,11 +34,15 @@ class DigitalBoard(Board):
         for chn in range(tot_ch):
             self.channels[chn+1] = {"state": False}
 
-    def set_status(self, channel, status):
+    def set_status(self, channel, status, threshold=None):
         if channel is not None:
             channel = int(channel)
             if self.channels.has_key(channel):
-                self.channels[channel]["state"] = bool(status)
+#                print channel, status, threshold
+                if threshold is not None:
+                    self.channels[channel]["state"] = bool(float(status)>threshold)
+                else:
+                    self.channels[channel]["state"] = bool(status)
             else:
                 print "ERROR: wrong channel selection in Digital board \"%s\", valid channels are %s"%(self.name, str(self.channels.keys()))
         else:

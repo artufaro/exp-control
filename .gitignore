@@ -1,12 +1,16 @@
-data/
-test/
-
+*-test.py
+data/*
+test/*
+copyramp/*.sub
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# spyproject
+.spyproject/*
 
 # C extensions
 *.so

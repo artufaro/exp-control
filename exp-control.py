@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -23,7 +23,11 @@ import sys, os
 #change path
 os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
-import PyQt4.QtGui as QtGui
+from PySide import QtCore
+QtCore.pyqtSignal = QtCore.Signal
+QtCore.pyqtSlot = QtCore.Slot
+
+import PySide.QtGui as QtGui
 
 from libraries.system import System
 import gui.programwindow
@@ -39,7 +43,7 @@ def main(args):
 
     win.setWindowTitle("%s (%s)" % (PRG_NAME, PRG_VERSION))
     win.showMaximized()
-    win.setFocus(True)
+    win.setFocus()
 
     sys.exit(app.exec_())
 

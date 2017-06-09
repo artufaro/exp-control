@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2015-2016  Simone Donadello
@@ -39,7 +39,7 @@ class SysCommand(object):
             print "CMD: wait the end of the program"
             self.sleep(time_sleep)
 
-    def run(self, wait_end=True):
+    def run(self, wait_end=True, add_time=100):
         if self.running:
             print "CMD: run program"
             self._system.set_program()
@@ -47,7 +47,7 @@ class SysCommand(object):
             if not valid:
                 print "CMD: ERROR while running program"
             if wait_end:
-                self.wait_end()
+                self.wait_end(add_time=add_time)
 
     def load(self, prg_name=None):
         if self.running:
@@ -78,7 +78,7 @@ class SysCommand(object):
             print "CMD: started"
             if self._system.main_program is not None:
                 action_name = self._system.main_program.name
-                self._system.action_list.get_cmd(action_name)
+                self._system.action_list.get_cmd(action_name) #questa è l'azione che esegue i commands
             self.running = False
 
     def get_var(self, name):
