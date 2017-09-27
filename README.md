@@ -8,7 +8,7 @@ https://github.com/simondona/exp-control-bec-tn
 ## Install (Debian/Ubuntu)
 Install `python2.7`, `numpy`, `matplotlib`, and `pyqt4`:
 ```
-sudo apt-get install python-numpy python-matplotlib python-qt4
+sudo apt-get install python-numpy python-matplotlib python-pyside
 ```
 
 Install FTDI support (use an updated version for `pylibftdi`):
@@ -25,6 +25,10 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", GROUP="dia
 Add the current `username` to the `dialout` group:
 ```
 sudo useradd -G dialout username
+```
+if is not working type:
+```
+sudo adduser username dialout
 ```
 
 Clone the repository:
