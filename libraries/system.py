@@ -203,15 +203,20 @@ class System(object):
         #TODO: control if the correct main program is loaded when it is called
         result = False
         if isinstance(self.main_program, lib_program.Program):
-            instructions = self._get_program_commands()
-            while not self.all_fpga_ready:
-                print "FPGAs are still in execution. Waiting..."
-                sleep_event = threading.Event()
-                sleep_event.wait(1000*self._time_multiplier)
-            print "running the current program"
-            for fpga_id in self.fpga_list:
-                valid = fpga_id.send_program_and_run(instructions)
-                result = result or valid
+            valid0, program_commands = self._get_program_commands()
+            if not valid0:
+                print 'ERRORS in program. Not executing.'
+                os.system('beep -r 2') #this requires Linux' beep installed
+                #TODO: try a more cross-platform solution
+            else:
+                while not self.all_fpga_ready:
+                    print "FPGAs are still in execution. Waiting..."
+                    sleep_event = threading.Event()
+                    sleep_event.wait(1000*self._time_multiplier)
+                print "running the current program"
+                for fpga_id in self.fpga_list:
+                    valid = fpga_id.send_program_and_run(program_commands)
+                    result = result or valid
         else:
             print "WARNING: any program loaded"
         return result
@@ -239,12 +244,12 @@ class System(object):
             end_instr = lib_instruction.FpgaInstruction(0, action=lib_action.EndAction(self))
             instrs_fpga.append(end_instr)
 
-        return instrs_fpga
+        return valid, instrs_fpga
 
     def _get_program_commands(self):
         cmd_list = []
         if isinstance(self.main_program, lib_program.Program):
-            instructions = self._run_program()
+            valid, instructions = self._run_program()
 
             if self.external_trigger:
                 cmd_list.append(lib_command.ExtTriggerOnCommand())
@@ -260,7 +265,7 @@ class System(object):
 
             cmd_list.append(lib_command.LoadDoneCommand())
 
-        return cmd_list
+        return valid, cmd_list
 
     def _get_instr_time_diff(self, prev_instr, curr_instr):
         if isinstance(prev_instr, lib_instruction.Instruction) and \
