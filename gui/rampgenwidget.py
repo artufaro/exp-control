@@ -84,6 +84,17 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         return self.fcutDoubleSpinBox.value()
 
     @property
+    def edit_slopes(self):
+        return self.editSlopesCheckBox.isChecked()
+    @property
+    def enabled(self):
+        return dict(zip(self.headers, [True,
+                                      True, not self.edit_slopes,
+                                      True, not self.edit_slopes,
+                                      True, True, True,
+                                      self.edit_slopes, self.edit_slopes,
+                                      False, False]))
+    @property
     def npoints(self):
         self.npointsLabel.setText(str(int(len(self.times))))
         return len(self.times)
@@ -112,6 +123,7 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         self.table.insertRow(index)
         self.table.blockSignals(True)
         self.writeTableRow(index, row)
+        self.updateARIndices()
         self.table.blockSignals(False)
         print('Added the {:d} row'.format(index+1))
 
@@ -123,7 +135,19 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         self.table.removeRow(index)
         print('Removed the {:d} row'.format(index+1))
         print('There are {:d} rows left\n'.format(self.table.rowCount()))
+        self.updateARIndices()
         self.updateRamps()
+
+    def updateARIndices(self):
+        add_index = self.headers.index('Add')
+        rem_index = self.headers.index('Remove')
+        for index in range(self.table.rowCount()):
+            self.table.cellWidget(index, add_index).index = index     # i never wrote the word 'index' so many times in a row
+            if index > 0:
+                self.table.cellWidget(index, rem_index).index = index
+        # print 'Add buttons indices:'
+        # for index in range(self.table.rowCount()):
+        #     print self.table.cellWidget(index, add_index).index
 
     def clearTable(self,):
         self.table.blockSignals(True)
@@ -131,30 +155,55 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
             self.removeRow(j-1, force=True)
         self.table.blockSignals(False)
 
+    def write_formatted_item(self, witem, head, value=None):
+        if value is None:
+            print 'no writable value: skipping'
+        elif head in ['omit',]:
+            witem.setCheckState(QtCore.Qt.CheckState(bool(value)))
+        elif head in ['npoints', 'amp0', 'amp1',]:
+            witem.setText('{:d}'.format(int(value)))
+        elif head in ['t0', 't1', 'x0', 'x1',]:
+            witem.setText('{:.2f}'.format(float(value)))
+        elif head in ['dt', 'slope']:
+            witem.setText('{:.4f}'.format(value))
+        else:
+            print 'no writable head: skipping'
+
+    def enableItem(self, index, col_index):
+        witem = self.table.item(index, col_index)
+        head = self.headers[col_index]
+        status = self.enabled[head]
+        # print(status)
+        if status:
+            witem.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled )  # force-enabling?
+            witem.setBackground(QtGui.QColor('white'))
+        else:
+            witem.setFlags(QtCore.Qt.ItemIsEnabled)    # because this seems to disable
+            witem.setBackground(QtGui.QColor('lightGray'))
+
+    def update_enable(self):
+        self.table.blockSignals(True)
+        for index in range(self.table.rowCount()):
+            for col_index in range(self.table.columnCount()):
+                self.enableItem(index, col_index)
+        self.table.blockSignals(False)
+
     def writeTableRow(self, index, row):
         for col_index, head in enumerate(self.headers):
             witem = QtGui.QTableWidgetItem()
+            value = None
             if head in row:
-    #            print('writing ',head)
                 value = row[head]
-                if head in ['omit',]:
-                    witem.setCheckState(QtCore.Qt.CheckState(bool(value)))
-                elif head in ['npoints', 'amp0', 'amp1',]:
-                    witem.setText('{:d}'.format(int(value)))
-                elif head in ['t0', 't1', 'x0', 'x1',]:
-                    witem.setText('{:.2f}'.format(float(value)))
             else:
                 if head == 'dt':
-                    dt = row['t1'] - row['t0']
-                    witem.setText('{:.4f}'.format(dt))
+                    value = row['t1'] - row['t0']
                 elif head == 'slope':
                     try:
-                        slope = (row['x1'] - row['x0'])/(row['t1'] - row['t0'])
+                        value = 1e3*(row['x1'] - row['x0'])/(row['t1'] - row['t0'])
                     except ZeroDivisionError as e:
                         print(e)
                         print('Will cast to nan')
-                        slope = np.nan
-                    witem.setText('{:.4f}'.format(slope*1e3))
+                        value = np.nan
                 elif head == 'Add':
                     widg = QPushButtonIndexed(index, text='Add',)
                     widg.setAutoDefault(False)
@@ -167,45 +216,71 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
                     widg.indexSignal.connect(self.removeRow)
                 else:
                     pass
-                witem.setFlags(QtCore.Qt.ItemIsEnabled)
-                witem.setBackground(QtGui.QColor('lightGray'))
+            self.write_formatted_item(witem, head, value)
             self.table.setItem(index, col_index, witem)
+            self.enableItem(index, col_index)
         self.updateRamps()
 
 
+
     @QtCore.Slot(QtGui.QTableWidgetItem)
-    def updateRow(self, witem):
+    def updateItem(self, witem):
         index, col_index = witem.row(), witem.column()
         head = self.headers[col_index]
-        # read updated values and format
-        row = self.readTableRow(index)
-        value = row[head]
+        row = self.readTableRow(index) # read updated values and format
         self.table.blockSignals(True)
-        if head in ['npoints', 'amp0', 'amp1',]:
-            witem.setText('{:d}'.format(int(float(value))))
-        elif head in ['t0', 't1', 'x0', 'x1',]:
-            witem.setText('{:.2f}'.format(float(value)))
-        # update uneditable values (dt, slope)
-        for head in ['dt', 'slope']:
-            item = self.table.item(index, self.headers.index(head))
-            if head == 'dt':
-                dt = row['t1'] - row['t0']
-                item.setText('{:.4f}'.format(dt))
-            elif head == 'slope':
-                try:
-                    slope = (row['x1'] - row['x0'])/(row['t1'] - row['t0'])
-                except ZeroDivisionError as e:
-                    print(e)
-                    print('Will cast to nan')
-                    slope = np.nan
-                item.setText('{:.4f}'.format(slope*1e3))
-        # ramps are auto-updated via properties. Now plot
+
+        self.write_formatted_item(witem, head, row[head]) # first rewrite w. proper format
+        # the update the rest of the table accordingly
+        if not self.edit_slopes:
+            for upd_head in ['dt', 'slope']:
+                item = self.table.item(index, self.headers.index(upd_head))
+                if upd_head == 'dt':
+                    value = row['t1'] - row['t0']
+                elif upd_head == 'slope':
+                    try:
+                        value = 1e3*(row['x1'] - row['x0'])/(row['t1'] - row['t0'])
+                    except ZeroDivisionError as e:
+                        print(e)
+                        print('Will cast to nan')
+                        value = np.nan
+                self.write_formatted_item(item, upd_head, value)
+        else:
+            for upd_head in ['x1', 't1']:
+                item = self.table.item(index, self.headers.index(upd_head))
+                if upd_head == 'x1':
+                    value = row['x0'] + 1e-3*row['slope']*row['dt']
+                elif upd_head == 't1':
+                    value = row['t0'] + row['dt']
+                self.write_formatted_item(item, upd_head, value)
+
         self.table.blockSignals(False)
+
+        ##### extra: join with previous ramp
+        ### this is done with signals unblocked --> dt and slope of the previous ramp will update too
+        if index > 0 and self.linkRampsCheckBox.isChecked():
+            for upd_head in ['x1', 't1']:
+                item = self.table.item(index - 1, self.headers.index(upd_head))
+                if upd_head == 'x1':
+                    value = row['x0']
+                elif upd_head == 't1':
+                    value = row['t0']
+                self.write_formatted_item(item, upd_head, value)
+        ##### extra: join with the next
+        # if index < self.table.rowCount() and self.linkRampsCheckBox.isChecked():
+        #     for upd_head in ['x0', 't0']:
+        #         item = self.table.item(index + 1, self.headers.index(upd_head))
+        #         if upd_head == 'x0':
+        #             value = row['x1']
+        #         elif upd_head == 't0':
+        #             value = row['t1']
+        #         self.write_formatted_item(item, upd_head, value)
+
         self.updateRamps()
 
     def readTableRow(self, index):
         row = {}
-        for head in self.headers_row:
+        for head in self.headers:
             col_index = self.headers.index(head)
             item = self.table.item(index, col_index)
             if head in ['omit',]:
@@ -217,13 +292,15 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
                     print(e)
                     print('Will cast to 0')
                     value = 0
-            elif head in ['t0', 't1', 'x0', 'x1',]:
+            elif head in ['t0', 't1', 'x0', 'x1','dt','slope']:
                 try:
                     value = float(item.text())
                 except ValueError as e:
                     print(e)
                     print('Will cast to nan')
                     value = np.nan
+            else: #is reading add/remove
+                value = None
             row[head] = value
         return row
 
@@ -343,6 +420,7 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         self.saveAsPushButton.clicked.connect(self.save_as)
         self.fcutDoubleSpinBox.valueChanged.connect(self.updateRamps)
         self.writeOutPushButton.clicked.connect(self.on_write_out)
+        self.editSlopesCheckBox.toggled.connect(self.update_enable)
 
     def setupTable(self, table):
         self.horizHeader = table.horizontalHeader()
@@ -350,7 +428,7 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         self.vertHeader.setVisible(True)
         table.setColumnCount(len(self.headers))
         table.setHorizontalHeaderLabels(self.headers)
-        table.itemChanged.connect(self.updateRow)
+        table.itemChanged.connect(self.updateItem)
 #        table.blockSignals(True)
         if self.currentRampName is None:
             self.insertRow(0)
