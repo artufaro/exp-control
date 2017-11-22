@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'rampgendialog.ui'
 #
-# Created: Wed Nov 22 14:29:16 2017
+# Created: Wed Nov 22 14:35:18 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -130,6 +130,7 @@ class Ui_RampGenDialog(object):
         self.tfinalLabel.setObjectName("tfinalLabel")
         self.gridLayout.addWidget(self.tfinalLabel, 8, 2, 1, 2)
         self.linkRampsCheckBox = QtGui.QCheckBox(self.formWidget)
+        self.linkRampsCheckBox.setCheckable(True)
         self.linkRampsCheckBox.setChecked(True)
         self.linkRampsCheckBox.setObjectName("linkRampsCheckBox")
         self.gridLayout.addWidget(self.linkRampsCheckBox, 5, 0, 1, 2)

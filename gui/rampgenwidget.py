@@ -258,15 +258,15 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
 
         ##### extra: join with previous ramp
         ### this is done with signals unblocked --> dt and slope of the previous ramp will update too
-        if index > 0 and self.linkRampsCheckBox.isChecked():
-            for upd_head in ['x1', 't1']:
-                item = self.table.item(index - 1, self.headers.index(upd_head))
-                if upd_head == 'x1':
-                    value = row['x0']
-                elif upd_head == 't1':
-                    value = row['t0']
-                self.write_formatted_item(item, upd_head, value)
-        ##### extra: join with the next
+        # if index > 0 and self.linkRampsCheckBox.isChecked():
+        #     for upd_head in ['x1', 't1']:
+        #         item = self.table.item(index - 1, self.headers.index(upd_head))
+        #         if upd_head == 'x1':
+        #             value = row['x0']
+        #         elif upd_head == 't1':
+        #             value = row['t0']
+        #         self.write_formatted_item(item, upd_head, value)
+        # ##### extra: join with the next
         # if index < self.table.rowCount() and self.linkRampsCheckBox.isChecked():
         #     for upd_head in ['x0', 't0']:
         #         item = self.table.item(index + 1, self.headers.index(upd_head))
