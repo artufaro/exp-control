@@ -20,8 +20,11 @@
 
 import sys, os
 
+import matplotlib
+matplotlib.use("Qt4Agg", force=True)
+
 #change path
-os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+#os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
 from PySide import QtCore
 QtCore.pyqtSignal = QtCore.Signal

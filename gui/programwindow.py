@@ -20,13 +20,14 @@
 
 from functools import partial
 # copyramp button
-from subprocess import call
+
 
 from gui.constants import RED, GREEN, BLUE
 import gui.programwidget
 import gui.defaultsettings
 import gui.plotactions
 import gui.commandwidget
+import gui.rampgenwidget
 
 import PySide.QtGui as QtGui
 import PySide.QtCore as QtCore
@@ -141,8 +142,8 @@ class ProgramEditWindow(QtGui.QMainWindow, object):
         # added button
         # connected to on_copyramp defined at line 279
         # moved iter_cmd_tabwidget from 6 to 7
-        copyramp_button = QtGui.QPushButton("Copy Evaporation ramp")
-        copyramp_button.setToolTip("copies and translates the ramp from the little computer")
+        copyramp_button = QtGui.QPushButton("Edit Evaporation ramp")
+        copyramp_button.setToolTip("GUI dialog to edit evaporation suobroutine")
         copyramp_button.clicked.connect(self.on_copyramp)
         copyramp_button.setStyleSheet("color: %s"%RED)
         right_layout.addWidget(copyramp_button, 6, 0, 1, 2)
@@ -250,10 +251,10 @@ class ProgramEditWindow(QtGui.QMainWindow, object):
         self.table_widget.table.update_fpgas(init=False)
 
     def on_copyramp(self):
-        #call('rsync -v bec@10.194.33.62:~/RampGenerator/"Evaporation\ Ramp.sub" ./test/Evaporation\ Ramp.sub',
-        #     shell=True)
-        #call('python ./test/labview_converter_evapramp_data.py', shell=True)
-		call('sh ./copyramp/copyramp.sh', shell=True)
+#		call('sh ./copyramp/copyramp.sh', shell=True)
+        if not hasattr(self, 'rampgendialog'):
+            self.rampgendialog = gui.rampgenwidget.RampGenDialog(parent=self, system=self.system)
+        self.rampgendialog.show()
 
     def on_cmd_changed(self):
         self.table_widget.table.cmd_str = (str(self.cmd_init_edit.toPlainText()),

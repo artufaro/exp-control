@@ -1,4 +1,0 @@
-# Version and requirements:
-
-* python 2.7
-* PySide
