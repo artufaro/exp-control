@@ -131,30 +131,6 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
             self.removeRow(j-1, force=True)
         self.table.blockSignals(False)
 
-    def readTableRow(self, index):
-        row = {}
-        for head in self.headers_row:
-            col_index = self.headers.index(head)
-            item = self.table.item(index, col_index)
-            if head in ['omit',]:
-                value = bool(item.checkState())
-            elif head in ['npoints', 'amp0', 'amp1',]:
-                try:
-                    value = int(float(item.text()))
-                except ValueError as e:
-                    print(e)
-                    print('Will cast to 0')
-                    value = 0
-            elif head in ['t0', 't1', 'x0', 'x1',]:
-                try:
-                    value = float(item.text())
-                except ValueError as e:
-                    print(e)
-                    print('Will cast to nan')
-                    value = np.nan
-            row[head] = value
-        return row
-
     def writeTableRow(self, index, row):
         for col_index, head in enumerate(self.headers):
             witem = QtGui.QTableWidgetItem()
@@ -227,7 +203,29 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         self.table.blockSignals(False)
         self.updateRamps()
 
-
+    def readTableRow(self, index):
+        row = {}
+        for head in self.headers_row:
+            col_index = self.headers.index(head)
+            item = self.table.item(index, col_index)
+            if head in ['omit',]:
+                value = bool(item.checkState())
+            elif head in ['npoints', 'amp0', 'amp1',]:
+                try:
+                    value = int(float(item.text()))
+                except ValueError as e:
+                    print(e)
+                    print('Will cast to 0')
+                    value = 0
+            elif head in ['t0', 't1', 'x0', 'x1',]:
+                try:
+                    value = float(item.text())
+                except ValueError as e:
+                    print(e)
+                    print('Will cast to nan')
+                    value = np.nan
+            row[head] = value
+        return row
 
 
     def updateRamps(self):
@@ -282,13 +280,17 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         self.currentRampName = None
 
     def load(self, fileName=None):
-        self.clearTable()
-        if fileName is None:
+        if fileName is None or not os.path.isfile(fileName):
             fileName = QtGui.QFileDialog.getOpenFileName(self,'Open file',
                                                          filter='Ramp txt/csv (*.txt *.csv)',
                                                          dir=self.saveDir)[0]
-            print(fileName)
-            self.saveDir, self.currentRampName = os.path.split(fileName)
+            print('opening file: %s'%fileName)
+            if fileName == '':
+                print 'no file opening'
+                return
+            else:
+                self.saveDir, self.currentRampName = os.path.split(fileName)
+        self.clearTable()
         headers = ['npoints', 't0', 't1', 'x0', 'x1', 'amp0', 'amp1',]
         A = np.genfromtxt(fileName, usecols=(1,2,3,4,5,6,7))
         if len(A.shape) == 1:
@@ -304,10 +306,17 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
         path = QtGui.QFileDialog.getSaveFileName(self,'Save as...',
                                                      filter='Ramp txt/csv (*.txt *.csv)',
                                                      dir=self.saveDir)[0]
-        self.save_to_txt(path)
+        if path == '':
+            print 'escaping'
+            return
+        else:
+            self.save_to_txt(path)
 
     def save_to_txt(self, path=None):
         if path is None:
+            if self.currentRampName is None:
+                print 'None ramp'
+                return
             path = os.path.join(self.saveDir, os.path.splitext(str(self.currentRampName))[0]+'.txt')
         else:
             self.saveDir, self.currentRampName = os.path.split(path)
