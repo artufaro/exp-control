@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'rampgendialog.ui'
 #
-# Created: Thu Jul 27 08:27:21 2017
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Mon Jul 31 11:41:06 2017
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -47,7 +47,7 @@ class Ui_RampGenDialog(object):
         self.fcutDoubleSpinBox = QtGui.QDoubleSpinBox(self.formWidget)
         self.fcutDoubleSpinBox.setDecimals(3)
         self.fcutDoubleSpinBox.setMaximum(99.999)
-        self.fcutDoubleSpinBox.setSingleStep(0.1)
+        self.fcutDoubleSpinBox.setSingleStep(0.001)
         self.fcutDoubleSpinBox.setObjectName("fcutDoubleSpinBox")
         self.gridLayout.addWidget(self.fcutDoubleSpinBox, 3, 2, 1, 2)
         self.line = QtGui.QFrame(self.formWidget)
