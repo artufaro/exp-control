@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>874</width>
-    <height>646</height>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,6 +28,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
      <item>
       <widget class="QWidget" name="formWidget" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="2">
          <widget class="QPushButton" name="savePushButton">
@@ -176,6 +182,12 @@
         </item>
         <item row="7" column="2" colspan="2">
          <widget class="QLabel" name="npointsLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -213,7 +225,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0" colspan="2">
+        <item row="5" column="0">
          <widget class="QCheckBox" name="linkRampsCheckBox">
           <property name="text">
            <string>link ramps</string>
@@ -221,15 +233,24 @@
           <property name="checkable">
            <bool>true</bool>
           </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
          </widget>
         </item>
         <item row="5" column="2" colspan="2">
-         <widget class="QCheckBox" name="editSlopesCheckBox">
+         <widget class="QComboBox" name="blockEditComboBox"/>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLabel" name="blockEditLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
-           <string>edit slopes</string>
+           <string>block edit</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
         </item>

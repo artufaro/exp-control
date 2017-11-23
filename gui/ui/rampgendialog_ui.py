@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'rampgendialog.ui'
 #
-# Created: Wed Nov 22 14:35:18 2017
+# Created: Thu Nov 23 01:44:29 2017
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_RampGenDialog(object):
     def setupUi(self, RampGenDialog):
         RampGenDialog.setObjectName("RampGenDialog")
-        RampGenDialog.resize(874, 646)
+        RampGenDialog.resize(874, 614)
         self.verticalLayout = QtGui.QVBoxLayout(RampGenDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.table = QtGui.QTableWidget(RampGenDialog)
@@ -28,6 +28,11 @@ class Ui_RampGenDialog(object):
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.formWidget = QtGui.QWidget(RampGenDialog)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.formWidget.sizePolicy().hasHeightForWidth())
+        self.formWidget.setSizePolicy(sizePolicy)
         self.formWidget.setObjectName("formWidget")
         self.gridLayout = QtGui.QGridLayout(self.formWidget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -107,6 +112,11 @@ class Ui_RampGenDialog(object):
         self.line_2.setObjectName("line_2")
         self.gridLayout.addWidget(self.line_2, 9, 0, 1, 4)
         self.npointsLabel = QtGui.QLabel(self.formWidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.npointsLabel.sizePolicy().hasHeightForWidth())
+        self.npointsLabel.setSizePolicy(sizePolicy)
         self.npointsLabel.setText("")
         self.npointsLabel.setObjectName("npointsLabel")
         self.gridLayout.addWidget(self.npointsLabel, 7, 2, 1, 2)
@@ -131,12 +141,20 @@ class Ui_RampGenDialog(object):
         self.gridLayout.addWidget(self.tfinalLabel, 8, 2, 1, 2)
         self.linkRampsCheckBox = QtGui.QCheckBox(self.formWidget)
         self.linkRampsCheckBox.setCheckable(True)
-        self.linkRampsCheckBox.setChecked(True)
         self.linkRampsCheckBox.setObjectName("linkRampsCheckBox")
-        self.gridLayout.addWidget(self.linkRampsCheckBox, 5, 0, 1, 2)
-        self.editSlopesCheckBox = QtGui.QCheckBox(self.formWidget)
-        self.editSlopesCheckBox.setObjectName("editSlopesCheckBox")
-        self.gridLayout.addWidget(self.editSlopesCheckBox, 5, 2, 1, 2)
+        self.gridLayout.addWidget(self.linkRampsCheckBox, 5, 0, 1, 1)
+        self.blockEditComboBox = QtGui.QComboBox(self.formWidget)
+        self.blockEditComboBox.setObjectName("blockEditComboBox")
+        self.gridLayout.addWidget(self.blockEditComboBox, 5, 2, 1, 2)
+        self.blockEditLabel = QtGui.QLabel(self.formWidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.blockEditLabel.sizePolicy().hasHeightForWidth())
+        self.blockEditLabel.setSizePolicy(sizePolicy)
+        self.blockEditLabel.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.blockEditLabel.setObjectName("blockEditLabel")
+        self.gridLayout.addWidget(self.blockEditLabel, 5, 1, 1, 1)
         self.horizontalLayout.addWidget(self.formWidget)
         self.rampPlotWidget = QtGui.QWidget(RampGenDialog)
         self.rampPlotWidget.setObjectName("rampPlotWidget")
@@ -161,5 +179,5 @@ class Ui_RampGenDialog(object):
         self.writeOutPushButton.setText(QtGui.QApplication.translate("RampGenDialog", "WRITE OUT", None, QtGui.QApplication.UnicodeUTF8))
         self.tfinalFormLabel.setText(QtGui.QApplication.translate("RampGenDialog", "t final", None, QtGui.QApplication.UnicodeUTF8))
         self.linkRampsCheckBox.setText(QtGui.QApplication.translate("RampGenDialog", "link ramps", None, QtGui.QApplication.UnicodeUTF8))
-        self.editSlopesCheckBox.setText(QtGui.QApplication.translate("RampGenDialog", "edit slopes", None, QtGui.QApplication.UnicodeUTF8))
+        self.blockEditLabel.setText(QtGui.QApplication.translate("RampGenDialog", "block edit", None, QtGui.QApplication.UnicodeUTF8))
 
