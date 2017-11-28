@@ -164,8 +164,10 @@ class RampGenDialog(QtGui.QDialog, Ui_RampGenDialog):
             witem.setCheckState(QtCore.Qt.CheckState(bool(value)))
         elif head in ['npoints', 'amp0', 'amp1',]:
             witem.setText('{:d}'.format(int(value)))
-        elif head in ['t0', 't1', 'x0', 'x1',]:
+        elif head in ['t0', 't1',]:
             witem.setText('{:.2f}'.format(float(value)))
+        elif head in ['x0', 'x1',]:
+            witem.setText('{:.3f}'.format(float(value)))
         elif head in ['dt', 'slope']:
             witem.setText('{:.4f}'.format(value))
         else:
