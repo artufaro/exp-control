@@ -33,7 +33,7 @@ sudo adduser username dialout
 
 Clone the repository:
 ```
-git clone https://github.com/simondona/exp-control-bec-tn.git
+git clone https://github.com/carmelom/exp-control.git
 ```
 
 If needed set the `exp-control.py` as executable:

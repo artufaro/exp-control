@@ -78,11 +78,11 @@ def create_xml_lut(args):
 
 	elif((i>N_FREQ+N_AMP) and (i<= N_FREQ*2 + N_AMP)):
 	    j = i - (N_FREQ + N_AMP)  -1
-	    string = "\t" + "<elem>" + str(i) + "<ch0><fr>"+str(freq_ch2[j])+"</fr></ch0></elem>"
+	    string = "\t" + "<elem>" + str(i) + "<ch1><fr>"+str(freq_ch2[j])+"</fr></ch1></elem>"
 
 	elif((i>N_FREQ) and (i<= N_FREQ*2 + N_AMP*2)):
 	    j = i - (N_FREQ*2 + N_AMP) -1
-	    string = "\t" + "<elem>" + str(i) + "<ch0><am>"+str(amp[j])+"</am></ch0></elem>"
+	    string = "\t" + "<elem>" + str(i) + "<ch1><am>"+str(amp[j])+"</am></ch1></elem>"
 	
 	#end file
 	elif(i==(N_ELEMENT +1)):
