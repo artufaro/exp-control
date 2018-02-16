@@ -1,0 +1,2 @@
+echo 'executing writetable' $1 $2
+./copyramp/writetable $1 $2
