@@ -63,8 +63,8 @@ def create_xml_lut(args):
         #wrote by the genius named Arturo Farolfi
         lambdaF1 = "lambda x: int({0}*(max(min(x, {2}), {1})-{1})/({2}-{1}))".format(N_FREQ, args.__dict__["f0_ch1"][0], args.__dict__["fn_ch1"][0])
         lambdaF2 = "lambda x: int({0}*(max(min(x, {2}), {1})-{1})/({2}-{1}) +500)".format(N_FREQ, args.__dict__["f0_ch2"][0], args.__dict__["fn_ch2"][0])
-        lambdaA1 = "lambda x: int(max(min(x/10.0, {0}),0)+400)".format(N_AMP)
-        lambdaA2 = "lambda x: int(max(min(x/10.0, {0}), 0)+900)".format(N_AMP)
+        lambdaA1 = "lambda x: int(max(min(x/10.0, {0}),0)+400)".format(N_AMP-1)
+        lambdaA2 = "lambda x: int(max(min(x/10.0, {0}), 0)+900)".format(N_AMP-1)
         print("copy next line to your board definition in init_boards.py:")
         print("parameters=dict(amp_to_lut={1: "+lambdaA1 +", 2: "+lambdaA2+"},\n"+ \
                     "freq_to_lut={1: "+lambdaF1+", 2: "+lambdaF2+"}))")
