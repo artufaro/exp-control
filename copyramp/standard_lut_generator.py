@@ -32,8 +32,10 @@ def main():
     parser.add_argument("f0_ch2", nargs=1,help="start frequency channel 2 [MHz]", type=float)
     parser.add_argument("fn_ch2", nargs=1,help="stop frequency channel 2 [MHz]", type=float)
 
-    parser.add_argument("-lut0", nargs=2, default=[60.0, 60.0], 
+    parser.add_argument("-lut0", nargs=2, default=[60.0, 60.0], \
             help="f1 and f2 in the n_lut=0 element [MHz]", type=float)
+    
+    parser.add_argument("-i", "--inverse", action='store_true', help="prints the inverse function for board definition")
     
     args = parser.parse_args()
     
@@ -57,12 +59,59 @@ def create_xml_lut(args):
     f0_header = 1e6*args.__dict__["lut0"][0]
     f1_header = 1e6*args.__dict__["lut0"][1]
     
-    
+    if args.inverse:
+        #wrote by the genius named Arturo Farolfi
+        lambdaF1 = "lambda x: int({0}*(max(min(x, {2}), {1})-{1})/({2}-{1}))".format(N_FREQ, args.__dict__["f0_ch1"][0], args.__dict__["fn_ch1"][0])
+        lambdaF2 = "lambda x: int({0}*(max(min(x, {2}), {1})-{1})/({2}-{1}) +500)".format(N_FREQ, args.__dict__["f0_ch2"][0], args.__dict__["fn_ch2"][0])
+        lambdaA1 = "lambda x: int(max(min(x/10.0, {0}),0)+400)".format(N_AMP)
+        lambdaA2 = "lambda x: int(max(min(x/10.0, {0}), 0)+900)".format(N_AMP)
+        print("copy next line to your board definition in init_boards.py:")
+        print("parameters=dict(amp_to_lut={1: "+lambdaA1 +", 2: "+lambdaA2+"},\n"+ \
+                    "freq_to_lut={1: "+lambdaF1+", 2: "+lambdaF2+"}))")
+
     for i in range(N_ELEMENT+2):
-	#header
-	if(i==0):
-	    string  = "<ad9958s>\n"
-	    string += "\t<elem>0" 
+    #header
+        if(i==0):
+            string  = "<ad9958s>\n"
+            string += "\t<elem>0" 
+            string += "<ch0><fr>"+str(f0_header)+"</fr><am>1000</am><ph>0</ph></ch0>"
+            string += "<ch1><fr>"+str(f1_header)+"</fr><am>1000</am><ph>0</ph></ch1>"
+            string += "</elem>"
+        
+            #elements
+        elif((i>0) and (i<= N_FREQ)):
+            j= i -1
+            string = "\t" + "<elem>" + str(i) + "<ch0><fr>"+str(freq_ch1[j])+"</fr></ch0></elem>"
+        
+        elif((i>N_FREQ) and (i<= N_FREQ + N_AMP)):
+            j = i - N_FREQ -1
+            string = "\t" + "<elem>" + str(i) + "<ch0><am>"+str(amp[j])+"</am></ch0></elem>"
+        
+        elif((i>N_FREQ+N_AMP) and (i<= N_FREQ*2 + N_AMP)):
+            j = i - (N_FREQ + N_AMP)  -1
+            string = "\t" + "<elem>" + str(i) + "<ch1><fr>"+str(freq_ch2[j])+"</fr></ch1></elem>"
+        
+        elif((i>N_FREQ) and (i<= N_FREQ*2 + N_AMP*2)):
+            j = i - (N_FREQ*2 + N_AMP) -1
+            string = "\t" + "<elem>" + str(i) + "<ch1><am>"+str(amp[j])+"</am></ch1></elem>"
+        
+        #end file
+        elif(i==(N_ELEMENT +1)):
+            string = "</ad9958s>"
+            
+        else:
+            raise SystemExit("ERROR: LUT generation. index i exceed the N_ELEMENT+2")
+        
+        fp.write(string + "\n") 
+    
+    fp.close()
+
+
+if __name__=="__main__":
+    main()
+
+
+
 	    string += "<ch0><fr>"+str(f0_header)+"</fr><am>1000</am><ph>0</ph></ch0>"
 	    string += "<ch1><fr>"+str(f1_header)+"</fr><am>1000</am><ph>0</ph></ch1>"
 	    string += "</elem>"
